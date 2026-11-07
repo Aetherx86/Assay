@@ -1,0 +1,41 @@
+{
+  "name": "@aetherx86/assay",
+  "version": "0.1.0",
+  "description": "Cross-checks what a Korean listed company reports about its assets against independent public records.",
+  "type": "module",
+  "license": "MIT",
+  "bin": {
+    "assay": "dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "NOTICE",
+    "LICENSE",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test \"test/**/*.test.ts\"",
+    "assay": "node src/cli.ts"
+  },
+  "dependencies": {
+    "kordoc": "^4.24.49",
+    "pdfjs-dist": "^4.10.38"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "typescript": "^5.9.3"
+  },
+  "author": "Jeong Hoon Kim",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Aetherx86/Assay.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  }
+}

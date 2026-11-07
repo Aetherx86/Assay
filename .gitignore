@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.env
+.assay/
+out/
+.DS_Store
+
+# cogit
+/.cogit/

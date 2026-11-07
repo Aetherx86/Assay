@@ -1,0 +1,6 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "noEmit": false, "allowImportingTsExtensions": false, "rootDir": "src", "declaration": false, "types": [] },
+  "files": ["src/checks/financial.ts", "src/statements/document.ts"],
+  "include": []
+}
