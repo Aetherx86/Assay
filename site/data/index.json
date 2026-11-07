@@ -1,0 +1,20 @@
+{
+  "reports": [
+    {
+      "label": "Samsung Electronics (FY2025)",
+      "file": "samsung-2025.json"
+    },
+    {
+      "label": "SK hynix (FY2025)",
+      "file": "hynix-2025.json"
+    },
+    {
+      "label": "CJ CheilJedang (FY2025)",
+      "file": "cjcj-2025.json"
+    },
+    {
+      "label": "SsangYong Motor (FY2020, control)",
+      "file": "ssangyong-2020.json"
+    }
+  ]
+}

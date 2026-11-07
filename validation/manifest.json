@@ -1,0 +1,62 @@
+{
+  "companies": [
+    { "id": "samsung-2025", "stockCode": "005930", "name": "Samsung Electronics", "fiscalYear": 2025, "set": "dev", "external": true, "sites": ["수원시 영통구 매탄동 416"], "expected": { "auditOpinion": "unqualified", "source": "Audited statements, images.samsung.com/is/content/samsung/assets/global/ir/docs/2025_con_quarter04_all.pdf" } },
+    { "id": "hynix-2025", "stockCode": "000660", "name": "SK hynix", "fiscalYear": 2025, "set": "dev" },
+    { "id": "hyundai-2025", "stockCode": "005380", "name": "Hyundai Motor", "fiscalYear": 2025, "set": "dev", "external": true, "sites": ["울산광역시 북구 양정동 700"] },
+    { "id": "lge-2025", "stockCode": "066570", "name": "LG Electronics", "fiscalYear": 2025, "set": "dev", "external": true, "sites": ["영등포구 여의도동 20"] },
+    { "id": "posco-2025", "stockCode": "005490", "name": "POSCO Holdings", "fiscalYear": 2025, "set": "dev", "external": true, "sites": ["포항시 남구 괴동동 1"] },
+    { "id": "naver-2025", "stockCode": "035420", "name": "NAVER", "fiscalYear": 2025, "set": "dev" },
+    { "id": "koreanair-2025", "stockCode": "003490", "name": "Korean Air", "fiscalYear": 2025, "set": "dev" },
+    { "id": "cgv-2025", "stockCode": "079160", "name": "CJ CGV", "fiscalYear": 2025, "set": "dev" },
+
+    { "id": "posco-2024", "stockCode": "005490", "name": "POSCO Holdings", "fiscalYear": 2024, "set": "dev", "secCik": "889132" },
+
+    { "id": "kia-2025", "stockCode": "000270", "name": "Kia", "fiscalYear": 2025, "set": "holdout" },
+    { "id": "lgchem-2025", "stockCode": "051910", "name": "LG Chem", "fiscalYear": 2025, "set": "holdout" },
+    { "id": "lottechem-2025", "stockCode": "011170", "name": "Lotte Chemical", "fiscalYear": 2025, "set": "holdout" },
+    { "id": "emart-2025", "stockCode": "139480", "name": "E-MART", "fiscalYear": 2025, "set": "holdout" },
+    { "id": "kakao-2025", "stockCode": "035720", "name": "Kakao", "fiscalYear": 2025, "set": "holdout" },
+    { "id": "doosan-2025", "stockCode": "034020", "name": "Doosan Enerbility", "fiscalYear": 2025, "set": "holdout" },
+    { "id": "hanwhasol-2025", "stockCode": "009830", "name": "Hanwha Solutions", "fiscalYear": 2025, "set": "holdout" },
+    { "id": "skinno-2025", "stockCode": "096770", "name": "SK Innovation", "fiscalYear": 2025, "set": "holdout" },
+    { "id": "skt-2025", "stockCode": "017670", "name": "SK Telecom", "fiscalYear": 2025, "set": "holdout" },
+    { "id": "kt-2025", "stockCode": "030200", "name": "KT", "fiscalYear": 2025, "set": "holdout" },
+    { "id": "lgd-2025", "stockCode": "034220", "name": "LG Display", "fiscalYear": 2025, "set": "holdout" },
+    { "id": "skt-2024", "stockCode": "017670", "name": "SK Telecom", "fiscalYear": 2024, "set": "holdout", "secCik": "1015650" },
+    { "id": "kt-2024", "stockCode": "030200", "name": "KT", "fiscalYear": 2024, "set": "holdout", "secCik": "892450" },
+    { "id": "lgd-2024", "stockCode": "034220", "name": "LG Display", "fiscalYear": 2024, "set": "holdout", "secCik": "1290109" },
+
+    { "id": "sdi-2025", "stockCode": "006400", "name": "Samsung SDI", "fiscalYear": 2025, "set": "holdout2" },
+    { "id": "biologics-2025", "stockCode": "207940", "name": "Samsung Biologics", "fiscalYear": 2025, "set": "holdout2" },
+    { "id": "hdec-2025", "stockCode": "000720", "name": "Hyundai E&C", "fiscalYear": 2025, "set": "holdout2" },
+    { "id": "sds-2025", "stockCode": "018260", "name": "Samsung SDS", "fiscalYear": 2025, "set": "holdout2" },
+    { "id": "ncsoft-2025", "stockCode": "036570", "name": "NCSOFT", "fiscalYear": 2025, "set": "holdout2" },
+    { "id": "cjcj-2025", "stockCode": "097950", "name": "CJ CheilJedang", "fiscalYear": 2025, "set": "holdout2" },
+    { "id": "bgf-2025", "stockCode": "282330", "name": "BGF Retail", "fiscalYear": 2025, "set": "holdout2" },
+    { "id": "hyundaisteel-2025", "stockCode": "004020", "name": "Hyundai Steel", "fiscalYear": 2025, "set": "holdout2" },
+
+    { "id": "ssangyong-2020", "stockCode": "003620", "name": "SsangYong Motor", "fiscalYear": 2020, "set": "control", "role": "event",
+      "expected": { "auditOpinion": "disclaimer", "source": "https://mobile.newsis.com/view/NISX20210323_0001380741" },
+      "statedFacts": [
+        { "line": "operatingIncome", "value": -449389000000, "source": "https://mobile.newsis.com/view/NISX20210323_0001380741" },
+        { "line": "netIncome", "value": -504341000000, "source": "https://mobile.newsis.com/view/NISX20210323_0001380741" },
+        { "line": "currentDeficit", "value": 781830000000, "source": "https://mobile.newsis.com/view/NISX20210323_0001380741" },
+        { "line": "totalEquity", "value": -88122000000, "source": "https://mobile.newsis.com/view/NISX20210323_0001380741" }
+      ] },
+    { "id": "ssangyong-2019", "stockCode": "003620", "name": "SsangYong Motor", "fiscalYear": 2019, "set": "control", "role": "prior" },
+    { "id": "winia-2023", "stockCode": "071460", "name": "Winia", "fiscalYear": 2023, "set": "control", "role": "event",
+      "expected": { "auditOpinion": "disclaimer", "source": "https://dealsite.co.kr/articles/120171" } },
+    { "id": "winia-2022", "stockCode": "071460", "name": "Winia", "fiscalYear": 2022, "set": "control", "role": "prior" },
+    { "id": "edisonev-2021", "stockCode": "136510", "name": "Edison EV", "fiscalYear": 2021, "set": "control", "role": "event",
+      "expected": { "auditOpinion": "disclaimer", "source": "https://www.khan.co.kr/article/202203301842001" },
+      "statedFacts": [
+        { "line": "revenue", "value": 29600000000, "source": "https://www.khan.co.kr/article/202203301842001" },
+        { "line": "netIncome", "value": -8500000000, "source": "https://www.khan.co.kr/article/202203301842001" }
+      ] },
+    { "id": "edisonev-2020", "stockCode": "136510", "name": "Edison EV", "fiscalYear": 2020, "set": "control", "role": "prior" },
+    { "id": "cellivery-2022", "stockCode": "268600", "name": "Cellivery", "fiscalYear": 2022, "set": "control", "role": "event",
+      "expected": { "auditOpinion": "disclaimer", "source": "https://www.ajunews.com/view/20231127153927205" },
+      "statedFacts": [ { "line": "cash", "value": 14600000000, "source": "https://www.ajunews.com/view/20231127153927205" } ] },
+    { "id": "cellivery-2021", "stockCode": "268600", "name": "Cellivery", "fiscalYear": 2021, "set": "control", "role": "prior" }
+  ]
+}

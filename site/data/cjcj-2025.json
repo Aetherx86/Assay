@@ -1,0 +1,596 @@
+{
+  "tool": {
+    "name": "Assay",
+    "version": "0.1.0"
+  },
+  "subject": {
+    "query": "097950",
+    "name": "CJ제일제당",
+    "stockCode": "097950",
+    "fiscalYear": 2025,
+    "address": "서울특별시 중구  동호로 330"
+  },
+  "generatedAt": "2026-11-07T06:49:37.065Z",
+  "statement": {
+    "fiscalYear": 2025,
+    "basis": "consolidated",
+    "company": "CJ제일제당",
+    "evidence": {
+      "source": "OpenDART full financial statements (XBRL)",
+      "locator": "fnlttSinglAcntAll corp_code=00635134 bsns_year=2025 reprt_code=11011",
+      "retrievedAt": "2026-11-07T06:49:30.297Z"
+    },
+    "unit": 1000,
+    "current": {
+      "totalAssets": 29744790534000,
+      "currentAssets": 7578773538000,
+      "nonCurrentAssets": 20875697925000,
+      "cash": 1038957402000,
+      "tradeReceivables": 2919044648000,
+      "inventories": 2181886741000,
+      "ppe": 12348602058000,
+      "intangibles": 4546865406000,
+      "totalLiabilities": 18193587910000,
+      "currentLiabilities": 9361389376000,
+      "nonCurrentLiabilities": 7760291867000,
+      "totalEquity": 11551202624000,
+      "retainedEarnings": 5025743890000,
+      "revenue": 27342589100000,
+      "costOfSales": 21434556379000,
+      "grossProfit": 5908032721000,
+      "sga": 4675056632000,
+      "operatingIncome": 1233604641000,
+      "netIncome": -416955408000,
+      "cfo": 2481608395000,
+      "cfi": -1526835884000,
+      "cff": -1102037045000,
+      "capex": 1630528597000,
+      "fxEffect": -7070964000,
+      "assetsHeldForSale": 1290319071000,
+      "liabilitiesHeldForSale": 1071906667000,
+      "cashOther": -108490287000
+    },
+    "prior": {
+      "totalAssets": 30133676241000,
+      "currentAssets": 8954370527000,
+      "nonCurrentAssets": 21133711121000,
+      "cash": 1301783187000,
+      "tradeReceivables": 3176653432000,
+      "inventories": 2520540654000,
+      "ppe": 12376211698000,
+      "intangibles": 4846376005000,
+      "totalLiabilities": 17906800341000,
+      "currentLiabilities": 10309712954000,
+      "nonCurrentLiabilities": 7595101140000,
+      "totalEquity": 12226875900000,
+      "retainedEarnings": 5731223143000,
+      "revenue": 27239748024000,
+      "costOfSales": 21085156756000,
+      "grossProfit": 6154591268000,
+      "sga": 4698310703000,
+      "operatingIncome": 1452067669000,
+      "netIncome": 345925769000,
+      "cfo": 2255253477000,
+      "cfi": -1103525104000,
+      "cff": -1863276495000,
+      "capex": 1000900488000,
+      "fxEffect": 126043016000,
+      "assetsHeldForSale": 45594593000,
+      "liabilitiesHeldForSale": 1986247000,
+      "cashOther": -835471000
+    },
+    "shares": {
+      "current": 16381619,
+      "prior": 16381619
+    }
+  },
+  "audit": {
+    "opinion": "unqualified",
+    "goingConcernUncertainty": false,
+    "keyAuditMatters": [
+      "영업권의 회수가능가액 검토"
+    ]
+  },
+  "ratings": [
+    {
+      "agency": "NICE",
+      "grade": "AA"
+    },
+    {
+      "agency": "한국기업평가",
+      "grade": "AA"
+    },
+    {
+      "agency": "한국신용평가",
+      "grade": "AA"
+    }
+  ],
+  "findings": [
+    {
+      "id": "integrity.balance",
+      "layer": "integrity",
+      "title": "Assets equal liabilities plus equity",
+      "status": "pass",
+      "detail": "assets = liabilities + equity holds within rounding.",
+      "value": 0,
+      "evidence": [
+        {
+          "source": "OpenDART full financial statements (XBRL)",
+          "locator": "fnlttSinglAcntAll corp_code=00635134 bsns_year=2025 reprt_code=11011",
+          "retrievedAt": "2026-11-07T06:49:30.297Z"
+        }
+      ]
+    },
+    {
+      "id": "integrity.balance-prior",
+      "layer": "integrity",
+      "title": "Prior year balances too",
+      "status": "pass",
+      "detail": "prior-year assets = liabilities + equity holds within rounding.",
+      "value": 0,
+      "evidence": [
+        {
+          "source": "OpenDART full financial statements (XBRL)",
+          "locator": "fnlttSinglAcntAll corp_code=00635134 bsns_year=2025 reprt_code=11011",
+          "retrievedAt": "2026-11-07T06:49:30.297Z"
+        }
+      ]
+    },
+    {
+      "id": "integrity.assets-split",
+      "layer": "integrity",
+      "title": "Current and non-current assets add up",
+      "status": "pass",
+      "detail": "assets = current + non-current holds within rounding.",
+      "value": 0,
+      "evidence": [
+        {
+          "source": "OpenDART full financial statements (XBRL)",
+          "locator": "fnlttSinglAcntAll corp_code=00635134 bsns_year=2025 reprt_code=11011",
+          "retrievedAt": "2026-11-07T06:49:30.297Z"
+        }
+      ]
+    },
+    {
+      "id": "integrity.liabilities-split",
+      "layer": "integrity",
+      "title": "Current and non-current liabilities add up",
+      "status": "pass",
+      "detail": "liabilities = current + non-current holds within rounding.",
+      "value": 0,
+      "evidence": [
+        {
+          "source": "OpenDART full financial statements (XBRL)",
+          "locator": "fnlttSinglAcntAll corp_code=00635134 bsns_year=2025 reprt_code=11011",
+          "retrievedAt": "2026-11-07T06:49:30.297Z"
+        }
+      ]
+    },
+    {
+      "id": "integrity.gross-profit",
+      "layer": "integrity",
+      "title": "Gross profit follows from revenue and cost of sales",
+      "status": "pass",
+      "detail": "gross profit = revenue - cost of sales holds within rounding.",
+      "value": 0,
+      "evidence": [
+        {
+          "source": "OpenDART full financial statements (XBRL)",
+          "locator": "fnlttSinglAcntAll corp_code=00635134 bsns_year=2025 reprt_code=11011",
+          "retrievedAt": "2026-11-07T06:49:30.297Z"
+        }
+      ]
+    },
+    {
+      "id": "integrity.cash-roll",
+      "layer": "integrity",
+      "title": "Cash flows explain the change in cash",
+      "status": "pass",
+      "detail": "Opening cash plus the three cash flows, FX and any filed reclassification equals closing cash.",
+      "value": 0,
+      "evidence": [
+        {
+          "source": "OpenDART full financial statements (XBRL)",
+          "locator": "fnlttSinglAcntAll corp_code=00635134 bsns_year=2025 reprt_code=11011",
+          "retrievedAt": "2026-11-07T06:49:30.297Z"
+        }
+      ]
+    },
+    {
+      "id": "quality.beneish",
+      "layer": "earnings-quality",
+      "title": "Beneish M-score",
+      "status": "pass",
+      "detail": "M = -2.942. Above -1.78 flags, -2.22 to -1.78 is a watch. DSRI 0.915, GMI 1.046, AQI 1.13, SGI 1.004, DEPI neutral (no depreciation figure), SGAI 0.991, TATA -0.097, LVGI 1.029. Fast growth alone can raise this score, and it was calibrated on US firms.",
+      "value": -2.942,
+      "evidence": [
+        {
+          "source": "OpenDART full financial statements (XBRL)",
+          "locator": "fnlttSinglAcntAll corp_code=00635134 bsns_year=2025 reprt_code=11011",
+          "retrievedAt": "2026-11-07T06:49:30.297Z"
+        }
+      ]
+    },
+    {
+      "id": "quality.altman",
+      "layer": "earnings-quality",
+      "title": "Altman Z'' distress score",
+      "status": "watch",
+      "detail": "Z'' = 1.1, grey zone. Below 1.1 is distress, above 2.6 is safe.",
+      "value": 1.1,
+      "evidence": [
+        {
+          "source": "OpenDART full financial statements (XBRL)",
+          "locator": "fnlttSinglAcntAll corp_code=00635134 bsns_year=2025 reprt_code=11011",
+          "retrievedAt": "2026-11-07T06:49:30.297Z"
+        }
+      ]
+    },
+    {
+      "id": "quality.piotroski",
+      "layer": "earnings-quality",
+      "title": "Piotroski F-score",
+      "status": "watch",
+      "detail": "4 of 9 tests passed. Failed: positive net income, return on assets improved, long-term leverage fell, current ratio improved, gross margin improved.",
+      "value": "4/9",
+      "evidence": [
+        {
+          "source": "OpenDART full financial statements (XBRL)",
+          "locator": "fnlttSinglAcntAll corp_code=00635134 bsns_year=2025 reprt_code=11011",
+          "retrievedAt": "2026-11-07T06:49:30.297Z"
+        }
+      ]
+    },
+    {
+      "id": "quality.accruals",
+      "layer": "earnings-quality",
+      "title": "Sloan accruals ratio",
+      "status": "pass",
+      "detail": "-4.6% of average assets. Rule of thumb: within 10% is normal, beyond 25% needs explaining. Heavy investment pushes this up, so read it alongside capex.",
+      "value": -0.046,
+      "evidence": [
+        {
+          "source": "OpenDART full financial statements (XBRL)",
+          "locator": "fnlttSinglAcntAll corp_code=00635134 bsns_year=2025 reprt_code=11011",
+          "retrievedAt": "2026-11-07T06:49:30.297Z"
+        }
+      ]
+    },
+    {
+      "id": "quality.cash-conversion",
+      "layer": "earnings-quality",
+      "title": "Profit turning into cash",
+      "status": "watch",
+      "detail": "Net loss, with positive operating cash flow.",
+      "evidence": [
+        {
+          "source": "OpenDART full financial statements (XBRL)",
+          "locator": "fnlttSinglAcntAll corp_code=00635134 bsns_year=2025 reprt_code=11011",
+          "retrievedAt": "2026-11-07T06:49:30.297Z"
+        }
+      ]
+    },
+    {
+      "id": "quality.receivables",
+      "layer": "earnings-quality",
+      "title": "Receivables against revenue growth",
+      "status": "pass",
+      "detail": "Grew -8.5 points faster than revenue.",
+      "value": -0.085,
+      "evidence": [
+        {
+          "source": "OpenDART full financial statements (XBRL)",
+          "locator": "fnlttSinglAcntAll corp_code=00635134 bsns_year=2025 reprt_code=11011",
+          "retrievedAt": "2026-11-07T06:49:30.297Z"
+        }
+      ]
+    },
+    {
+      "id": "quality.inventory",
+      "layer": "earnings-quality",
+      "title": "Inventory against revenue growth",
+      "status": "pass",
+      "detail": "Grew -13.8 points faster than revenue.",
+      "value": -0.138,
+      "evidence": [
+        {
+          "source": "OpenDART full financial statements (XBRL)",
+          "locator": "fnlttSinglAcntAll corp_code=00635134 bsns_year=2025 reprt_code=11011",
+          "retrievedAt": "2026-11-07T06:49:30.297Z"
+        }
+      ]
+    },
+    {
+      "id": "solvency.equity",
+      "layer": "earnings-quality",
+      "title": "Liabilities against equity",
+      "status": "pass",
+      "detail": "Liabilities are 158% of equity. Normal levels differ a lot between sectors.",
+      "value": 1.58,
+      "evidence": [
+        {
+          "source": "OpenDART full financial statements (XBRL)",
+          "locator": "fnlttSinglAcntAll corp_code=00635134 bsns_year=2025 reprt_code=11011",
+          "retrievedAt": "2026-11-07T06:49:30.297Z"
+        }
+      ]
+    },
+    {
+      "id": "solvency.current",
+      "layer": "earnings-quality",
+      "title": "Current ratio",
+      "status": "watch",
+      "detail": "Current assets are 0.81 times current liabilities.",
+      "value": 0.81,
+      "evidence": [
+        {
+          "source": "OpenDART full financial statements (XBRL)",
+          "locator": "fnlttSinglAcntAll corp_code=00635134 bsns_year=2025 reprt_code=11011",
+          "retrievedAt": "2026-11-07T06:49:30.297Z"
+        }
+      ]
+    },
+    {
+      "id": "solvency.intangibles",
+      "layer": "earnings-quality",
+      "title": "Intangibles against equity",
+      "status": "pass",
+      "detail": "Intangible assets are 39.4% of equity.",
+      "value": 0.394,
+      "evidence": [
+        {
+          "source": "OpenDART full financial statements (XBRL)",
+          "locator": "fnlttSinglAcntAll corp_code=00635134 bsns_year=2025 reprt_code=11011",
+          "retrievedAt": "2026-11-07T06:49:30.297Z"
+        }
+      ]
+    },
+    {
+      "id": "reconciliation.sources:KIND filing: 사업보고서(일반법인) (2026.03.16)",
+      "layer": "reconciliation",
+      "title": "Against KIND filing: 사업보고서(일반법인) (2026.03.16)",
+      "status": "pass",
+      "detail": "12 of 12 core lines agree within rounding.",
+      "value": "12/12",
+      "evidence": [
+        {
+          "source": "OpenDART full financial statements (XBRL)",
+          "locator": "fnlttSinglAcntAll corp_code=00635134 bsns_year=2025 reprt_code=11011",
+          "retrievedAt": "2026-11-07T06:49:30.297Z"
+        },
+        {
+          "source": "KIND filing: 사업보고서(일반법인) (2026.03.16)",
+          "locator": "https://kind.krx.co.kr/external/2026/03/16/001719/20260316005125/11011.htm",
+          "retrievedAt": "2026-11-07T06:49:34.393Z",
+          "sha256": "7055620b15381394a08b08aeead6bd08928d0976514ce2e81f522331b026757e"
+        }
+      ]
+    },
+    {
+      "id": "reconciliation.sources:KIND filing: 연결감사보고서 (2026.03.16)",
+      "layer": "reconciliation",
+      "title": "Against KIND filing: 연결감사보고서 (2026.03.16)",
+      "status": "flag",
+      "detail": "12 of 12 core lines agree within rounding. Differences in netIncome (prior).",
+      "value": "12/12",
+      "evidence": [
+        {
+          "source": "OpenDART full financial statements (XBRL)",
+          "locator": "fnlttSinglAcntAll corp_code=00635134 bsns_year=2025 reprt_code=11011",
+          "retrievedAt": "2026-11-07T06:49:30.297Z"
+        },
+        {
+          "source": "KIND filing: 연결감사보고서 (2026.03.16)",
+          "locator": "https://kind.krx.co.kr/external/2026/03/16/001719/20260316005134/00761.htm",
+          "retrievedAt": "2026-11-07T06:49:36.770Z",
+          "sha256": "ead5ecf91b6fba1a1841f91316a705165a093f74629572af9ebb439ab75b2ab3"
+        }
+      ]
+    },
+    {
+      "id": "reconciliation.restatement",
+      "layer": "reconciliation",
+      "title": "Prior-year figures unchanged in the next report",
+      "status": "watch",
+      "detail": "Comparatives for 2024 differ from that year's report on: totalAssets, currentAssets, nonCurrentAssets, assetsHeldForSale, cash, tradeReceivables, inventories, ppe, intangibles, totalLiabilities, currentLiabilities, nonCurrentLiabilities, liabilitiesHeldForSale, totalEquity, retainedEarnings, revenue, costOfSales, grossProfit, sga, operatingIncome, netIncome, cashOther. Reclassification and restatement both cause this.",
+      "value": 22,
+      "evidence": [
+        {
+          "source": "OpenDART full financial statements (XBRL)",
+          "locator": "fnlttSinglAcntAll corp_code=00635134 bsns_year=2025 reprt_code=11011",
+          "retrievedAt": "2026-11-07T06:49:30.297Z"
+        },
+        {
+          "source": "OpenDART full financial statements (XBRL)",
+          "locator": "fnlttSinglAcntAll corp_code=00635134 bsns_year=2024 reprt_code=11011",
+          "retrievedAt": "2026-11-07T06:49:30.423Z"
+        }
+      ]
+    },
+    {
+      "id": "audit.opinion",
+      "layer": "audit",
+      "title": "Auditor opinion",
+      "status": "pass",
+      "detail": "unqualified, from 삼일회계법인.",
+      "value": "unqualified",
+      "evidence": [
+        {
+          "source": "KIND filing: 연결감사보고서 (2026.03.16)",
+          "locator": "https://kind.krx.co.kr/external/2026/03/16/001719/20260316005134/00761.htm",
+          "retrievedAt": "2026-11-07T06:49:36.770Z",
+          "sha256": "ead5ecf91b6fba1a1841f91316a705165a093f74629572af9ebb439ab75b2ab3"
+        }
+      ]
+    },
+    {
+      "id": "audit.opinion-match",
+      "layer": "audit",
+      "title": "Filed opinion matches the audit report",
+      "status": "pass",
+      "detail": "OpenDART says unqualified, the document says unqualified.",
+      "evidence": [
+        {
+          "source": "KIND filing: 연결감사보고서 (2026.03.16)",
+          "locator": "https://kind.krx.co.kr/external/2026/03/16/001719/20260316005134/00761.htm",
+          "retrievedAt": "2026-11-07T06:49:36.770Z",
+          "sha256": "ead5ecf91b6fba1a1841f91316a705165a093f74629572af9ebb439ab75b2ab3"
+        }
+      ]
+    },
+    {
+      "id": "audit.going-concern",
+      "layer": "audit",
+      "title": "Going concern uncertainty",
+      "status": "pass",
+      "detail": "None reported.",
+      "evidence": [
+        {
+          "source": "KIND filing: 연결감사보고서 (2026.03.16)",
+          "locator": "https://kind.krx.co.kr/external/2026/03/16/001719/20260316005134/00761.htm",
+          "retrievedAt": "2026-11-07T06:49:36.770Z",
+          "sha256": "ead5ecf91b6fba1a1841f91316a705165a093f74629572af9ebb439ab75b2ab3"
+        }
+      ]
+    },
+    {
+      "id": "audit.kam",
+      "layer": "audit",
+      "title": "Key audit matters",
+      "status": "info",
+      "detail": "영업권의 회수가능가액 검토",
+      "value": 1,
+      "evidence": [
+        {
+          "source": "KIND filing: 연결감사보고서 (2026.03.16)",
+          "locator": "https://kind.krx.co.kr/external/2026/03/16/001719/20260316005134/00761.htm",
+          "retrievedAt": "2026-11-07T06:49:36.770Z",
+          "sha256": "ead5ecf91b6fba1a1841f91316a705165a093f74629572af9ebb439ab75b2ab3"
+        }
+      ]
+    },
+    {
+      "id": "audit.ratings",
+      "layer": "audit",
+      "title": "Credit ratings stated in the filing",
+      "status": "info",
+      "detail": "NICE AA, 한국기업평가 AA, 한국신용평가 AA",
+      "value": "AA",
+      "evidence": [
+        {
+          "source": "KIND filing: 사업보고서(일반법인) (2026.03.16)",
+          "locator": "https://kind.krx.co.kr/external/2026/03/16/001719/20260316005125/11011.htm",
+          "retrievedAt": "2026-11-07T06:49:34.393Z",
+          "sha256": "7055620b15381394a08b08aeead6bd08928d0976514ce2e81f522331b026757e"
+        }
+      ]
+    },
+    {
+      "id": "disclosure.severe",
+      "layer": "disclosure",
+      "title": "Filings about severe events",
+      "status": "pass",
+      "detail": "None among 303 filings.",
+      "value": 0,
+      "evidence": [
+        {
+          "source": "OpenDART",
+          "locator": "corp_code=00635134",
+          "retrievedAt": "2026-11-07T06:49:36.795Z"
+        }
+      ]
+    },
+    {
+      "id": "disclosure.amendments",
+      "layer": "disclosure",
+      "title": "Amended periodic reports",
+      "status": "pass",
+      "detail": "3 of 22 periodic reports were amended.",
+      "value": 0.136,
+      "evidence": [
+        {
+          "source": "OpenDART",
+          "locator": "corp_code=00635134",
+          "retrievedAt": "2026-11-07T06:49:36.795Z"
+        }
+      ]
+    },
+    {
+      "id": "disclosure.dilution",
+      "layer": "disclosure",
+      "title": "Convertible, warrant and rights issuance",
+      "status": "pass",
+      "detail": "0 issuance decision(s) in the period.",
+      "value": 0,
+      "evidence": [
+        {
+          "source": "OpenDART",
+          "locator": "corp_code=00635134",
+          "retrievedAt": "2026-11-07T06:49:36.795Z"
+        }
+      ]
+    },
+    {
+      "id": "ownership.insiders",
+      "layer": "ownership",
+      "title": "Insider buying and selling, last 12 months",
+      "status": "info",
+      "detail": "0 net buyer(s) and 0 net seller(s) across 0 filings.",
+      "value": "0/0",
+      "evidence": [
+        {
+          "source": "OpenDART",
+          "locator": "corp_code=00635134",
+          "retrievedAt": "2026-11-07T06:49:36.795Z"
+        }
+      ]
+    },
+    {
+      "id": "ownership.large-holders",
+      "layer": "ownership",
+      "title": "5% holder changes, last 12 months",
+      "status": "info",
+      "detail": "국민연금공단 -2pt, 국민연금공단 +0.33pt",
+      "value": 2,
+      "evidence": [
+        {
+          "source": "OpenDART",
+          "locator": "corp_code=00635134",
+          "retrievedAt": "2026-11-07T06:49:36.795Z"
+        }
+      ]
+    },
+    {
+      "id": "intangible.patents",
+      "layer": "intangible",
+      "title": "Registered IP",
+      "status": "unavailable",
+      "detail": "External services were turned off for this run.",
+      "evidence": []
+    },
+    {
+      "id": "physical.sites",
+      "layer": "physical",
+      "title": "Building register",
+      "status": "unavailable",
+      "detail": "External services were turned off for this run.",
+      "evidence": []
+    },
+    {
+      "id": "legal.citations",
+      "layer": "legal",
+      "title": "Statute citations",
+      "status": "unavailable",
+      "detail": "External services were turned off for this run.",
+      "evidence": []
+    },
+    {
+      "id": "context.region",
+      "layer": "context",
+      "title": "Regional statistics",
+      "status": "unavailable",
+      "detail": "External services were turned off for this run.",
+      "evidence": []
+    }
+  ]
+}

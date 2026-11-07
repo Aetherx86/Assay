@@ -1,0 +1,21 @@
+Assay is written by Jeong Hoon Kim and released under the MIT License.
+
+Packages it depends on
+- kordoc, Copyright (c) 2026 chrisryugj, MIT License. Reads PDF, HWP, HWPX and writes HWPX.
+  https://github.com/chrisryugj/kordoc
+- pdfjs-dist, Mozilla Foundation, Apache License 2.0. Used by kordoc to read PDF files.
+
+Public services it calls at run time, none of whose code is included here
+- korean-law-mcp, Chris (chrisryugj), MIT License, hosted at mcp.gomdori.app/law
+- korean-stats-mcp, chrisryugj, MIT License, hosted at mcp.gomdori.app/stats
+- archhub-mcp, Chris (chrisryugj), MIT License, hosted at mcp.gomdori.app/archhub
+- korean-patent-mcp, ryuseungin, MIT License, hosted at mcp.gomdori.app/patent
+
+Data comes from OpenDART (Financial Supervisory Service), KIND (Korea Exchange), the US SEC, KIPRIS,
+the National Law Information Center, KOSIS and Building HUB. Their terms apply to that data.
+
+The scoring models follow their published formulas:
+- Beneish, M. D. (1999). The Detection of Earnings Manipulation. Financial Analysts Journal.
+- Altman, E. I., Hartzell, J., Peck, M. (1995). Emerging Markets Corporate Bonds: A Scoring System.
+- Piotroski, J. D. (2000). Value Investing. Journal of Accounting Research.
+- Sloan, R. G. (1996). Do Stock Prices Fully Reflect Information in Accruals and Cash Flows. The Accounting Review.
