@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { summaryMarkdown, type Lang } from './summary.ts';
 import type { Finding, Layer, Line, Report, Status } from './types.ts';
 
 const LAYERS: [Layer, string][] = [
@@ -61,9 +62,9 @@ function title(report: Report): string {
   return `${name ?? query}${stockCode ? ` (${stockCode})` : ''}, fiscal ${fiscalYear}`;
 }
 
-export function toMarkdown(report: Report): string {
+export function toMarkdown(report: Report, lang: Lang = 'ko'): string {
   const c = coverage(report);
-  const lines: string[] = [`# Assay report: ${title(report)}`, ''];
+  const lines: string[] = [`# Assay report: ${title(report)}`, '', summaryMarkdown(report, lang), lang === 'ko' ? '---\n\n아래는 전문가용 세부 점검 결과입니다.\n' : '---\n\nDetailed checks follow.\n'];
   lines.push(`Generated ${report.generatedAt} by Assay ${report.tool.version}.`, '');
   lines.push(`**Coverage:** ${c.layersRun} of ${c.layers} layers ran.${c.missing.length ? ` Not run: ${c.missing.join(', ')}.` : ''}`, '');
   lines.push(`**Results:** ${c.counts.flag} flag, ${c.counts.watch} watch, ${c.counts.pass} pass, ${c.counts.info} info, ${c.counts.unavailable} not run.`, '');

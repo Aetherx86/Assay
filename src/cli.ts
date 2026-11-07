@@ -7,6 +7,7 @@ import { analyze, VERSION } from './analyze.ts';
 import { reconcile } from './checks/reconcile.ts';
 import { coverage, toHtml, toHwpx, toMarkdown } from './report.ts';
 import { statementFromDocument } from './statements/file.ts';
+import { summarize, type Lang } from './summary.ts';
 import { runRound } from './validate.ts';
 
 const HELP = `Assay ${VERSION}: cross-checks what a Korean listed company reports against public records.
@@ -22,6 +23,7 @@ Analyze options
   --out <dir>         Output directory (default: out)
   --format <list>     Comma separated: md,json,html,hwpx (default: md,json,html)
   --no-external       Skip the patent, building, statute and statistics services
+  --lang <ko|en>      Language of the summary (default: ko)
 
 Environment
   DART_API_KEY        OpenDART key. Adds XBRL figures, insider data and search by company name
@@ -48,7 +50,7 @@ async function main(): Promise<number> {
     options: {
       year: { type: 'string' }, doc: { type: 'string' }, site: { type: 'string', multiple: true },
       out: { type: 'string' }, format: { type: 'string' }, 'no-external': { type: 'boolean' },
-      round: { type: 'string' }, set: { type: 'string' }, help: { type: 'boolean', short: 'h' }, version: { type: 'boolean', short: 'v' },
+      lang: { type: 'string' }, round: { type: 'string' }, set: { type: 'string' }, help: { type: 'boolean', short: 'h' }, version: { type: 'boolean', short: 'v' },
     },
   });
   if (values.version) {
@@ -72,11 +74,13 @@ async function main(): Promise<number> {
     await mkdir(out, { recursive: true });
     const base = `${report.subject.stockCode ?? report.subject.query}-${year}`;
     const formats = (values.format ?? 'md,json,html').split(',');
-    if (formats.includes('md')) await writeFile(join(out, `${base}.md`), toMarkdown(report));
+    const lang: Lang = values.lang === 'en' ? 'en' : 'ko';
+    if (formats.includes('md')) await writeFile(join(out, `${base}.md`), toMarkdown(report, lang));
     if (formats.includes('json')) await writeFile(join(out, `${base}.json`), JSON.stringify(report, null, 2));
     if (formats.includes('html')) await writeFile(join(out, `${base}.html`), toHtml(report));
     if (formats.includes('hwpx')) await writeFile(join(out, `${base}.hwpx`), await toHwpx(report));
     const c = coverage(report);
+    console.log(`${summarize(report, lang).headline}\n`);
     console.log(`${report.subject.name ?? report.subject.query} ${year}: ${c.layersRun}/${c.layers} layers ran. ${c.counts.flag} flag, ${c.counts.watch} watch, ${c.counts.pass} pass, ${c.counts.info} info, ${c.counts.unavailable} not run.`);
     if (c.missing.length) console.log(`Not run: ${c.missing.join(', ')}.`);
     console.log(`Written to ${join(out, base)}.{${formats.join(',')}}`);
