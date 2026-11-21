@@ -1,6 +1,6 @@
 {
   "name": "@aetherx86/assay",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Cross-checks what a Korean listed company reports about its assets against independent public records.",
   "type": "module",
   "license": "MIT",

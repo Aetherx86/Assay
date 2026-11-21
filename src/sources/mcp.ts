@@ -28,7 +28,14 @@ export interface ToolResult {
 export function parseEnvelope(raw: string): { result?: { content?: { text?: string }[]; isError?: boolean }; error?: { message: string } } {
   const line = raw.split('\n').map((l) => l.replace(/^data:\s*/, '')).find((l) => l.startsWith('{'));
   if (!line) throw new ServiceError('upstream', 'The service returned no JSON-RPC message.');
-  return JSON.parse(line);
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(line);
+  } catch {
+    throw new ServiceError('upstream', 'The service returned malformed JSON.');
+  }
+  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) throw new ServiceError('upstream', 'The service returned a JSON value that is not a message.');
+  return parsed as ReturnType<typeof parseEnvelope>;
 }
 
 /**

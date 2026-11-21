@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import { contextCheck, extractCitations, parseRegion, regionFromAddress } from '../src/checks/external.ts';
 import { auditChecks, disclosureChecks, opinionFromDart, ownershipChecks } from '../src/checks/filings.ts';
 import { altman, beneish, earningsQuality, integrityChecks, piotroski } from '../src/checks/financial.ts';
-import { CORE_LINES, reconcile, restatementFinding } from '../src/checks/reconcile.ts';
+import { compareRestatement, CORE_LINES, MEASUREMENT_LINES, reconcile, restatementFinding } from '../src/checks/reconcile.ts';
 import { coverage, fingerprint } from '../src/report.ts';
 import type { Report, Statement } from '../src/types.ts';
 
@@ -132,8 +132,49 @@ test('changed comparatives are noticed', () => {
   assert.equal(restatementFinding(SAMSUNG, earlier).status, 'pass');
   const restated = { ...SAMSUNG, prior: { ...SAMSUNG.prior, revenue: SAMSUNG.prior.revenue! - million(500) } };
   const finding = restatementFinding(restated, earlier);
-  assert.equal(finding.status, 'watch');
-  assert.match(finding.detail, /revenue/);
+  assert.equal(finding.status, 'info', 'a line item alone moving is read as presentation');
+  assert.equal(finding.value, 1);
+  assert.match(finding.detail, /revenue KRW -0\.5 bn \(under 0\.001%\)/);
+});
+
+const EARLIER: Statement = { ...SAMSUNG, fiscalYear: 2024, current: SAMSUNG.prior, prior: {} };
+
+test('a changed total, equity or net income is a measurement change and a watch', () => {
+  for (const line of MEASUREMENT_LINES) {
+    const later = { ...SAMSUNG, prior: { ...SAMSUNG.prior, [line]: SAMSUNG.prior[line]! + million(1000) } };
+    const r = compareRestatement(later, EARLIER);
+    assert.equal(r.kind, 'measurement', line);
+    assert.equal(restatementFinding(later, EARLIER).status, 'watch', line);
+  }
+});
+
+test('moving an amount between current and non-current assets is presentation only', () => {
+  const later = { ...SAMSUNG, prior: { ...SAMSUNG.prior, currentAssets: SAMSUNG.prior.currentAssets! - million(2000), nonCurrentAssets: SAMSUNG.prior.nonCurrentAssets! + million(2000) } };
+  const r = compareRestatement(later, EARLIER);
+  assert.equal(r.kind, 'presentation');
+  assert.deepEqual(r.changes.map((c) => c.line), ['currentAssets', 'nonCurrentAssets']);
+  assert.equal(r.changes[0]!.difference, -million(2000));
+  assert.ok(Math.abs(r.shareOfAssets! - 2000 / 514531948) < 1e-12);
+  const finding = restatementFinding(later, EARLIER);
+  assert.equal(finding.status, 'info');
+  assert.match(finding.detail, /reclassification/);
+});
+
+test('restatement within rounding, or only in depreciation read from the notes, is a pass', () => {
+  const rounded = { ...SAMSUNG, prior: { ...SAMSUNG.prior, totalAssets: SAMSUNG.prior.totalAssets! + million(1), depreciation: 1 } };
+  assert.equal(restatementFinding(rounded, EARLIER).status, 'pass');
+});
+
+test('restatement with no line in common is not run, rather than a pass', () => {
+  const finding = restatementFinding({ ...SAMSUNG, prior: { revenue: 1 } }, { ...EARLIER, current: { cash: 1 } });
+  assert.equal(finding.status, 'unavailable');
+});
+
+test('a line that was zero and is now reported is a change from zero', () => {
+  const later = { ...SAMSUNG, prior: { ...SAMSUNG.prior, assetsHeldForSale: million(50) } };
+  const r = compareRestatement(later, { ...EARLIER, current: { ...EARLIER.current, assetsHeldForSale: 0 } });
+  assert.equal(r.changes[0]!.relative, Infinity);
+  assert.match(restatementFinding(later, { ...EARLIER, current: { ...EARLIER.current, assetsHeldForSale: 0 } }).detail, /assetsHeldForSale from zero/);
 });
 
 test('disclosure rules catch severe titles, amendments and repeated issuance', () => {

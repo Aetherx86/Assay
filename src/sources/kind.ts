@@ -4,7 +4,7 @@ import type { Evidence } from '../types.ts';
 import type { DisclosureRow } from './dart.ts';
 
 const BASE = 'https://kind.krx.co.kr';
-const USER_AGENT = 'Mozilla/5.0 (compatible; assay/0.1; +https://github.com/Aetherx86/Assay)';
+const USER_AGENT = 'Mozilla/5.0 (compatible; assay/0.2; +https://github.com/Aetherx86/Assay)';
 /** One request at a time with a pause in between, because this is a public site and not an API. */
 const PAUSE_MS = 1200;
 

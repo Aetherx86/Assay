@@ -12,7 +12,7 @@ execFileSync(process.execPath, ['node_modules/typescript/bin/tsc', '-p', 'tsconf
 for (const file of ['index.html', 'app.js', 'style.css']) cpSync(join('site', file), join(out, file));
 if (existsSync('site/data')) cpSync('site/data', join(out, 'data'), { recursive: true });
 const banned = /from\s+['"]node:|require\(/;
-for (const file of ['checks/financial.js', 'statements/document.js']) {
+for (const file of ['checks/digits.js', 'checks/financial.js', 'statements/document.js']) {
   if (banned.test(readFileSync(join(out, 'lib', file), 'utf8'))) throw new Error(`${file} depends on Node and cannot run in a browser.`);
 }
 console.log(`Site written to ${out}`);

@@ -79,13 +79,18 @@ export function beneish(s: Statement): Finding {
   const sgi = c.revenue! / p.revenue!;
   const hasDepreciation = c.depreciation !== undefined && p.depreciation !== undefined;
   const rate = (x: Period): number => x.depreciation! / (x.depreciation! + x.ppe!);
-  const depi = hasDepreciation ? rate(p) / rate(c) : 1;
+  const depiRaw = hasDepreciation ? rate(p) / rate(c) : 1;
+  const useDepi = hasDepreciation && Number.isFinite(depiRaw);
+  const depi = useDepi ? depiRaw : 1;
   const sgai = (c.sga! / c.revenue!) / (p.sga! / p.revenue!);
   const lvgi = (c.totalLiabilities! / c.totalAssets!) / (p.totalLiabilities! / p.totalAssets!);
   const tata = (c.netIncome! - c.cfo!) / c.totalAssets!;
   const m = -4.84 + 0.92 * dsri + 0.528 * gmi + 0.404 * aqi + 0.892 * sgi + 0.115 * depi - 0.172 * sgai + 4.679 * tata - 0.327 * lvgi;
+  if (![dsri, gmi, aqi, sgi, depi, sgai, lvgi, tata, m].every(Number.isFinite)) {
+    return finding('quality.beneish', 'earnings-quality', title, 'unavailable', 'One or more required denominators is zero, so the M-score ratios are undefined.', s.evidence);
+  }
   const status: Status = m > -1.78 ? 'flag' : m > -2.22 ? 'watch' : 'pass';
-  const parts = `DSRI ${round(dsri)}, GMI ${round(gmi)}, AQI ${round(aqi)}, SGI ${round(sgi)}, DEPI ${hasDepreciation ? round(depi) : 'neutral (no depreciation figure)'}, SGAI ${round(sgai)}, TATA ${round(tata)}, LVGI ${round(lvgi)}`;
+  const parts = `DSRI ${round(dsri)}, GMI ${round(gmi)}, AQI ${round(aqi)}, SGI ${round(sgi)}, DEPI ${useDepi ? round(depi) : 'neutral (no depreciation figure)'}, SGAI ${round(sgai)}, TATA ${round(tata)}, LVGI ${round(lvgi)}`;
   return finding('quality.beneish', 'earnings-quality', title, status, `M = ${round(m)}. Above -1.78 flags, -2.22 to -1.78 is a watch. ${parts}. Fast growth alone can raise this score, and it was calibrated on US firms.`, s.evidence, round(m));
 }
 
@@ -97,7 +102,14 @@ export function altman(s: Statement): Finding {
   const title = "Altman Z'' distress score";
   if (gaps.length) return finding('quality.altman', 'earnings-quality', title, 'unavailable', `Missing ${gaps.join(', ')}. ${FINANCIAL_SECTOR_NOTE}`, s.evidence);
   const ta = c.totalAssets!;
-  const z = 6.56 * ((c.currentAssets! - c.currentLiabilities!) / ta) + 3.26 * (c.retainedEarnings! / ta) + 6.72 * (c.operatingIncome! / ta) + 1.05 * (c.totalEquity! / c.totalLiabilities!);
+  const tl = c.totalLiabilities!;
+  if (ta === 0 || tl === 0) {
+    return finding('quality.altman', 'earnings-quality', title, 'unavailable', 'Total assets or total liabilities is zero, so the Z\'\' ratios are undefined.', s.evidence);
+  }
+  const z = 6.56 * ((c.currentAssets! - c.currentLiabilities!) / ta) + 3.26 * (c.retainedEarnings! / ta) + 6.72 * (c.operatingIncome! / ta) + 1.05 * (c.totalEquity! / tl);
+  if (!Number.isFinite(z)) {
+    return finding('quality.altman', 'earnings-quality', title, 'unavailable', 'One or more Z\'\' ratios are undefined.', s.evidence);
+  }
   const status: Status = z < 1.1 ? 'flag' : z < 2.6 ? 'watch' : 'pass';
   const zone = z < 1.1 ? 'distress' : z < 2.6 ? 'grey' : 'safe';
   return finding('quality.altman', 'earnings-quality', title, status, `Z'' = ${round(z, 2)}, ${zone} zone. Below 1.1 is distress, above 2.6 is safe.`, s.evidence, round(z, 2));
@@ -110,6 +122,9 @@ export function piotroski(s: Statement): Finding {
   const need: Line[] = ['netIncome', 'totalAssets', 'cfo', 'nonCurrentLiabilities', 'currentAssets', 'currentLiabilities', 'grossProfit', 'revenue'];
   const gaps = [...new Set([...missing(c, need), ...missing(p, need).filter((l) => l !== 'cfo')])];
   if (gaps.length) return finding('quality.piotroski', 'earnings-quality', title, 'unavailable', `Missing ${gaps.join(', ')}. ${FINANCIAL_SECTOR_NOTE}`, s.evidence);
+  if (!c.totalAssets || !p.totalAssets || !c.currentLiabilities || !p.currentLiabilities || !c.revenue || !p.revenue) {
+    return finding('quality.piotroski', 'earnings-quality', title, 'unavailable', 'A required denominator (total assets, current liabilities, or revenue) is zero, so the F-score ratios are undefined.', s.evidence);
+  }
   const tests: [string, boolean][] = [
     ['positive net income', c.netIncome! > 0],
     ['positive operating cash flow', c.cfo! > 0],
@@ -136,9 +151,14 @@ export function earningsQuality(s: Statement): Finding[] {
   };
 
   if (c.netIncome !== undefined && c.cfo !== undefined && c.cfi !== undefined && c.totalAssets !== undefined && p.totalAssets !== undefined) {
-    const ratio = (c.netIncome - c.cfo - c.cfi) / ((c.totalAssets + p.totalAssets) / 2);
-    const size = Math.abs(ratio);
-    add('quality.accruals', 'Sloan accruals ratio', size > 0.25 ? 'flag' : size > 0.1 ? 'watch' : 'pass', `${(ratio * 100).toFixed(1)}% of average assets. Rule of thumb: within 10% is normal, beyond 25% needs explaining. Heavy investment pushes this up, so read it alongside capex.`, round(ratio));
+    const avgAssets = (c.totalAssets + p.totalAssets) / 2;
+    if (avgAssets > 0) {
+      const ratio = (c.netIncome - c.cfo - c.cfi) / avgAssets;
+      const size = Math.abs(ratio);
+      add('quality.accruals', 'Sloan accruals ratio', size > 0.25 ? 'flag' : size > 0.1 ? 'watch' : 'pass', `${(ratio * 100).toFixed(1)}% of average assets. Rule of thumb: within 10% is normal, beyond 25% needs explaining. Heavy investment pushes this up, so read it alongside capex.`, round(ratio));
+    } else {
+      add('quality.accruals', 'Sloan accruals ratio', 'unavailable', 'Average total assets is zero or negative, so the accruals ratio is undefined.');
+    }
   }
   if (c.netIncome !== undefined && c.cfo !== undefined) {
     if (c.netIncome > 0) {
@@ -163,18 +183,26 @@ export function earningsQuality(s: Statement): Finding[] {
       add('solvency.equity', 'Liabilities against equity', ratio > 4 ? 'flag' : ratio > 2 ? 'watch' : 'pass', `Liabilities are ${(ratio * 100).toFixed(0)}% of equity. Normal levels differ a lot between sectors.`, round(ratio, 2));
     }
   }
-  if (c.currentAssets !== undefined && c.currentLiabilities) {
-    const ratio = c.currentAssets / c.currentLiabilities;
-    add('solvency.current', 'Current ratio', ratio < 1 ? 'watch' : 'pass', `Current assets are ${ratio.toFixed(2)} times current liabilities.`, round(ratio, 2));
+  if (c.currentAssets !== undefined && c.currentLiabilities !== undefined) {
+    if (c.currentLiabilities > 0) {
+      const ratio = c.currentAssets / c.currentLiabilities;
+      add('solvency.current', 'Current ratio', ratio < 1 ? 'watch' : 'pass', `Current assets are ${ratio.toFixed(2)} times current liabilities.`, round(ratio, 2));
+    } else {
+      add('solvency.current', 'Current ratio', 'unavailable', 'Current liabilities is zero or negative, so the current ratio is undefined.');
+    }
   }
   if (c.intangibles !== undefined && c.totalEquity && c.totalEquity > 0) {
     const ratio = c.intangibles / c.totalEquity;
     add('solvency.intangibles', 'Intangibles against equity', ratio > 1 ? 'flag' : ratio > 0.5 ? 'watch' : 'pass', `Intangible assets are ${(ratio * 100).toFixed(1)}% of equity.`, round(ratio, 3));
   }
   if (c.ppe !== undefined && p.ppe !== undefined && c.capex !== undefined && c.depreciation !== undefined) {
-    const gap = c.ppe - (p.ppe + c.capex - c.depreciation);
-    const share = gap / c.ppe;
-    add('quality.ppe-roll', 'Investment explains the change in PP&E', Math.abs(share) > 0.1 ? 'watch' : 'pass', `Opening PP&E plus capex minus depreciation misses closing PP&E by ${(share * 100).toFixed(1)}%. Acquisitions, FX and disposals can explain a gap.`, round(share));
+    if (c.ppe > 0) {
+      const gap = c.ppe - (p.ppe + c.capex - c.depreciation);
+      const share = gap / c.ppe;
+      add('quality.ppe-roll', 'Investment explains the change in PP&E', Math.abs(share) > 0.1 ? 'watch' : 'pass', `Opening PP&E plus capex minus depreciation misses closing PP&E by ${(share * 100).toFixed(1)}%. Acquisitions, FX and disposals can explain a gap.`, round(share));
+    } else {
+      add('quality.ppe-roll', 'Investment explains the change in PP&E', 'unavailable', 'Closing PP&E is zero or negative, so the roll-forward gap share is undefined.');
+    }
   }
   return out;
 }

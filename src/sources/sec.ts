@@ -1,6 +1,6 @@
 import type { Line, Period } from '../types.ts';
 
-const USER_AGENT = 'assay-validation/0.1';
+const USER_AGENT = 'assay-validation/0.2';
 
 const TAGS: Partial<Record<Line, string>> = {
   totalAssets: 'Assets',
@@ -31,9 +31,11 @@ interface CompanyFacts {
 export function factsToPeriod(facts: CompanyFacts, fiscalYear: number): Period {
   const period: Period = {};
   const end = `${fiscalYear}-12-31`;
-  const taxonomy = facts.facts['ifrs-full'] ?? {};
+  // The response is remote data, so every level is checked before it is read.
+  const taxonomy = facts?.facts?.['ifrs-full'] ?? {};
   for (const [line, tag] of Object.entries(TAGS) as [Line, string][]) {
-    const rows = taxonomy[tag]?.units['KRW']?.filter((f) => f.end === end && f.form?.startsWith('20-F')) ?? [];
+    const units = taxonomy[tag]?.units?.['KRW'];
+    const rows = (Array.isArray(units) ? units : []).filter((f) => f && f.end === end && typeof f.form === 'string' && f.form.startsWith('20-F') && Number.isFinite(f.val));
     // Flow items also appear for shorter periods, so only a full year counts.
     const annual = rows.filter((f) => !f.start || f.start === `${fiscalYear}-01-01`);
     const latest = annual.at(-1);

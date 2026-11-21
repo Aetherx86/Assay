@@ -46,8 +46,9 @@ Every run evaluates up to ten independent layers. A check that cannot run becaus
 | `earnings-quality` | `solvency.equity` | Total liabilities to total equity (flags negative equity or `> 400%`) |
 | `earnings-quality` | `solvency.current` | Current ratio (`currentAssets / currentLiabilities`) |
 | `earnings-quality` | `solvency.intangibles` | Intangible assets as a share of total equity |
+| `earnings-quality` | `quality.digits` | First-digit Benford screening over distinct comma-grouped printed amounts (Nigrini first-digit MAD bands, expected sampling MAD, and most-repeated figure) |
 | `reconciliation` | `reconciliation.sources:*` | Line-by-line comparison across OpenDART XBRL, the KRX KIND annual report (`사업보고서`), the attached independent auditor's report (`연결감사보고서` / `감사보고서`), and US SEC 20-F XBRL |
-| `reconciliation` | `reconciliation.restatement` | Compares the prior-year column of year `T` against the current-year column originally reported in year `T - 1` |
+| `reconciliation` | `reconciliation.restatement` | Compares the prior-year column of year `T` against year `T - 1`, separating measurement changes in headline totals (`watch`) from presentation reclassifications (`info`) |
 | `audit` | `audit.opinion` | Auditor's opinion (`unqualified`, `qualified`, `adverse`, `disclaimer`) from OpenDART and the audit report letter |
 | `audit` | `audit.opinion-match` | Verifies that the OpenDART summary table and the attached audit report state the same opinion |
 | `audit` | `audit.going-concern` | Checks for material uncertainty related to going concern (`계속기업 존속불확실성`) |
@@ -97,23 +98,35 @@ export DART_API_KEY="your_40_character_opendart_key"
 
 ## 4. Command-Line Usage
 
+### Check a local filing offline (new in 0.2.0)
+
+`check` reads one local filing (PDF, HWP, HWPX, DOCX, XLSX, HTML, TXT, MD, or TSV) with no network access and runs statement arithmetic, earnings quality and solvency models, Benford leading-digit screening, and audit/rating extraction. `--fail-on` turns it into a CI or pipeline gate (`exit 1` when any finding meets the threshold).
+
+```bash
+# Check the installed version
+node dist/cli.js --version
+
+# Offline Markdown report with a pipeline gate on flags
+node dist/cli.js check test/fixtures/samsung-2025-statements.html --fail-on flag
+
+# Structured JSON output on standard output
+node dist/cli.js check test/fixtures/samsung-2025-statements.html --json
+
+# Reconcile two local filings against each other as JSON
+node dist/cli.js reconcile test/fixtures/samsung-2025-statements.html test/fixtures/samsung-2025-statements.html --year 2025 --json
+```
+
 ### Analyze a listed company
 
 ```bash
 # By 6-digit KRX stock code (works with or without DART_API_KEY)
 node dist/cli.js analyze 005930 --year 2025
 
-# Include a dual-listed US SEC CIK and a physical site lot address
-node dist/cli.js analyze 005930 --year 2025 --cik 0001046179 --site "경기도 수원시 영통구 매탄동 416"
+# Include a local company document to reconcile against and a physical site lot address
+node dist/cli.js analyze 005930 --year 2025 --doc ./Audit_Report.pdf --site "경기도 수원시 영통구 매탄동 416"
 
-# Analyze a local filing document (PDF, HTML, HWPX, DOCX, XLSX) offline
-node dist/cli.js analyze 005930 --year 2025 --file ./Audit_Report.pdf --offline
-
-# Write output in Markdown, JSON, self-contained HTML, or HWPX
-node dist/cli.js analyze 005930 --year 2025 --format md --out samsung-2025.md
-node dist/cli.js analyze 005930 --year 2025 --format json --out samsung-2025.json
-node dist/cli.js analyze 005930 --year 2025 --format html --out samsung-2025.html
-node dist/cli.js analyze 005930 --year 2025 --format hwpx --out samsung-2025.hwpx
+# Write output in Markdown, JSON, self-contained HTML, or HWPX (add --json to print JSON to stdout)
+node dist/cli.js analyze 005930 --year 2025 --format md,json,html,hwpx --out out
 ```
 
 ### Run the validation suite
@@ -200,26 +213,28 @@ The validation protocol ([`validation/PROTOCOL.md`](validation/PROTOCOL.md)) and
 Assay/
 ├── src/
 │   ├── analyze.ts              # Orchestrates sources and checks into a Report
-│   ├── cli.ts                  # CLI entry point (`analyze` and `validate`)
+│   ├── check.ts                # Offline single-document check and severity gate
+│   ├── cli.ts                  # CLI entry point (`analyze`, `check`, `reconcile`, `validate`)
 │   ├── report.ts               # Markdown, JSON, HTML, and HWPX formatters
 │   ├── types.ts                # Core data structures (Statement, Finding, Report)
 │   ├── validate.ts             # Gate evaluator and multi-round runner
 │   ├── checks/
+│   │   ├── digits.ts           # First-digit Benford screening (Nigrini MAD bands)
 │   │   ├── external.ts         # KIPRIS patents, building register, statutes, KOSIS
 │   │   ├── filings.ts          # Audit opinions, KAM, severe disclosures, ownership
 │   │   ├── financial.ts        # Arithmetic identities, Beneish, Altman Z'', Piotroski
-│   │   └── reconcile.ts        # Cross-source and prior-year restatement checks
+│   │   └── reconcile.ts        # Cross-source and classified prior-year restatement checks
 │   ├── sources/
 │   │   ├── dart.ts             # OpenDART XBRL, disclosures, auditors, ownership client
 │   │   ├── kind.ts             # KRX KIND scraper and document downloader
 │   │   ├── mcp.ts              # Public data gateway client for KIPRIS/MOLEG/KOSIS/buildings
 │   │   └── sec.ts              # US SEC EDGAR companyfacts XBRL client
 │   └── statements/
-│       ├── document.ts         # K-IFRS / IFRS HTML and plain-text statement parser
-│       ├── file.ts             # PDF (pdfjs-dist) and office/HWPX (kordoc) loader
+│       ├── document.ts         # Linear-time K-IFRS / IFRS HTML and plain-text statement parser
+│       ├── file.ts             # PDF (pdfjs-dist), office/HWPX (kordoc), and text loader
 │       └── grades.ts           # Credit rating normalization and comparison
 ├── site/                       # Static browser demo (compiled via scripts/build-site.mjs)
-├── test/                       # 80 unit and regression tests (node --test)
+├── test/                       # 111 unit, differential, hardening, and CLI tests (node --test)
 └── validation/
     ├── PROTOCOL.md             # Validation gates and evaluation rules
     ├── manifest.json           # 39-company-year validation manifest

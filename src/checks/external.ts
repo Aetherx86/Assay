@@ -91,7 +91,11 @@ export async function propertyCheck(site: string, company: string | undefined): 
   }
 }
 
-const STATUTE = /([가-힣ㆍ·]+(?:\s[가-힣ㆍ·]+){0,8}?\s?법률?(?:\s시행령|\s시행규칙)?)\s*제\s*(\d+)\s*조(의\s*\d+)?/g;
+/**
+ * Words are capped at 40 characters. Unbounded, a long run of Hangul with no statute in it made every
+ * starting position backtrack across the whole run, which is quadratic in the length of the filing.
+ */
+const STATUTE = /([가-힣ㆍ·]{1,40}(?:\s[가-힣ㆍ·]{1,40}){0,8}?\s?법률?(?:\s시행령|\s시행규칙)?)\s*제\s*(\d+)\s*조(의\s*\d+)?/g;
 const PARTICLE_ENDING = /(?:는|은|이|가|을|를|에|로|서|며|고|및|또는|따라|따른|의한|근거한|규정|상기|해당|현행)$/;
 
 /** Long titles read "... 에 관한 법률" and need all their words. Others are a single word like 상법. */

@@ -9,10 +9,24 @@ export interface Row {
 
 const COMMA_AMOUNT = /(?<![\d,.])[(△▲-]?\(?-?\d{1,3}(?:,\d{3})+\)?(?![\d,])/g;
 
+/**
+ * Applies a replacement whose every match ends with `>`. No match can end after the last `>`, so the
+ * text after it is left alone. That keeps the result identical while stopping the regex engine from
+ * rescanning to the end of the input from every unmatched `<`, which made hostile input quadratic.
+ */
+function replaceTags(text: string, pattern: RegExp, replacement: string): string {
+  const last = text.lastIndexOf('>');
+  if (last < 0) return text;
+  return text.slice(0, last + 1).replace(pattern, replacement) + text.slice(last + 1);
+}
+
+/** Removes markup tags. Same result as `text.replace(/<[^>]+>/g, '')`, in linear time. */
+export function stripTags(text: string): string {
+  return replaceTags(text, /<[^>]+>/g, '');
+}
+
 function clean(text: string): string {
-  return text
-    .replace(/<br\s*\/?>/gi, ' ')
-    .replace(/<[^>]+>/g, '')
+  return stripTags(replaceTags(text, /<br\s*\/?>/gi, ' '))
     .replace(/&nbsp;/gi, ' ')
     .replace(/&amp;/gi, '&')
     .replace(/[\s　]+/g, ' ')
@@ -27,7 +41,11 @@ function toNumber(token: string): number {
 
 function splitCells(line: string): string[] | null {
   if (/<t[dh][\s>]/i.test(line)) {
-    return [...line.matchAll(/<t[dh](?:\s[^>]*)?>([\s\S]*?)<\/t[dh]>/gi)].map((m) => clean(m[1]!));
+    // Every cell ends with a closing tag, so nothing after the last one can be a cell. Cutting there
+    // keeps unclosed cells from making each opening tag rescan the rest of the line.
+    let end = 0;
+    for (const m of line.matchAll(/<\/t[dh]>/gi)) end = m.index + m[0].length;
+    return [...line.slice(0, end).matchAll(/<t[dh](?:\s[^>]*)?>([\s\S]*?)<\/t[dh]>/gi)].map((m) => clean(m[1]!));
   }
   if (line.trim().startsWith('|')) {
     if (/^\s*\|[\s:|-]+\|\s*$/.test(line)) return [];
@@ -58,15 +76,77 @@ function rowFromCells(cells: string[], lineNo: number, noteColumn: number): Row 
   return { label, values, cells, lineNo };
 }
 
-/** Puts each table row on its own line so filed HTML reads the same way as parsed documents. */
+/** Drops script and style blocks. An opening tag with no closing tag after it is kept, as before. */
+function removeBlocks(html: string): string {
+  const open = /<(script|style)\b/gi;
+  const unclosed = new Set<string>();
+  let out = '';
+  let kept = 0;
+  for (let m = open.exec(html); m; m = open.exec(html)) {
+    const name = m[1]!.toLowerCase();
+    if (unclosed.has(name)) continue;
+    const close = new RegExp(`</${name}>`, 'gi');
+    close.lastIndex = m.index + m[0].length;
+    const end = close.exec(html);
+    if (!end) {
+      // No closing tag follows this one, so none follows any later one either.
+      unclosed.add(name);
+      continue;
+    }
+    out += html.slice(kept, m.index);
+    kept = end.index + end[0].length;
+    open.lastIndex = kept;
+  }
+  return out + html.slice(kept);
+}
+
+/** Wraps each table row in markers, with its paragraphs and breaks turned into spaces. */
+function markRows(html: string): string {
+  const open = /<tr\b/gi;
+  const close = /<\/tr>/gi;
+  let out = '';
+  let kept = 0;
+  for (let m = open.exec(html); m; m = open.exec(html)) {
+    const tagEnd = html.indexOf('>', m.index + 3);
+    if (tagEnd < 0) break;
+    close.lastIndex = tagEnd + 1;
+    const end = close.exec(html);
+    // Later rows start after this one, so they cannot find a closing tag either.
+    if (!end) break;
+    const row = html.slice(tagEnd + 1, end.index);
+    out += `${html.slice(kept, m.index)}\u0001${replaceTags(row, /<\/?p\b[^>]*>|<br\s*\/?>/gi, ' ')}\u0001`;
+    kept = end.index + end[0].length;
+    open.lastIndex = kept;
+  }
+  return out + html.slice(kept);
+}
+
+/**
+ * Puts each table row on its own line so filed HTML reads the same way as parsed documents. Runs in
+ * linear time, so a document with unclosed rows, cells or scripts cannot stall the parser.
+ */
 export function htmlToLines(html: string): string {
-  return html
-    .replace(/<(script|style)\b[\s\S]*?<\/\1>/gi, '')
-    .replace(/\r?\n/g, ' ')
-    // Cells can hold paragraphs, which must not split a row across lines.
-    .replace(/<tr\b[^>]*>([\s\S]*?)<\/tr>/gi, (_, row: string) => `\u0001${row.replace(/<\/?p\b[^>]*>|<br\s*\/?>/gi, ' ')}\u0001`)
-    .replace(/<\/table>|<\/p>|<\/h\d>|<\/div>|<table\b[^>]*>|<br\s*\/?>/gi, '\n')
-    .replace(/\u0001/g, '\n');
+  // Cells can hold paragraphs, which must not split a row across lines.
+  const rows = markRows(removeBlocks(html).replace(/\r?\n/g, ' '));
+  return replaceTags(rows, /<\/table>|<\/p>|<\/h\d>|<\/div>|<table\b[^>]*>|<br\s*\/?>/gi, '\n').replace(/\u0001/g, '\n');
+}
+
+/**
+ * Every comma-grouped amount printed in the text, as positive sizes in the document's own units.
+ * Bare numbers are left out because they are mostly note references, years, page numbers and counts.
+ */
+export function amountTokens(markdown: string): number[] {
+  const out: number[] = [];
+  // Read cell by cell, because adjacent cells with their tags removed would run into one number.
+  for (const row of toRows(markdown)) {
+    for (const cell of row.cells) {
+      for (const token of cell.match(COMMA_AMOUNT) ?? []) {
+        const value = Math.abs(toNumber(token));
+        if (Number.isFinite(value) && value > 0) out.push(value);
+      }
+    }
+  }
+  return out;
 }
 
 /** Flattens HTML tables, pipe tables and loose text into one label-plus-amounts row per line. */
@@ -99,7 +179,11 @@ export function toRows(markdown: string): Row[] {
   return rows;
 }
 
+/** Longer cells are prose, not line labels, and are not worth running the label patterns over. */
+const MAX_LABEL = 300;
+
 function normalizeLabel(label: string): string {
+  if (label.length > MAX_LABEL) return '';
   const stripped = label
     .replace(/^[\s\dⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩIVX]+[.)]\s*/, '')
     .replace(/^[ㆍ·\s]+/, '')
@@ -173,12 +257,16 @@ function detectYear(rows: Row[], markdown: string): number | undefined {
   return period ? Number(period.label.match(/(20\d\d)\.\d\d\.\d\d/)![1]) : undefined;
 }
 
+export const MAX_PAIR_ROWS = 2000;
+
 /**
  * Finds the two rows that add up to `total` in both fiscal-year columns. Subtotals often come out
  * of PDFs with a missing or wrong label, so this relies on the arithmetic instead of the wording.
  */
 export function findSubtotalPair(rows: Row[], total: number[]): [Row, Row] | undefined {
-  const candidates = rows.filter((r) => r.values.length >= 2);
+  // The search is quadratic, so only the rows nearest the total are tried. A balance sheet section
+  // has well under a hundred rows, so the cap only matters for hostile or misread documents.
+  const candidates = rows.filter((r) => r.values.length >= 2).slice(-MAX_PAIR_ROWS);
   for (let i = 0; i < candidates.length; i++) {
     for (let j = i + 1; j < candidates.length; j++) {
       const a = candidates[i]!.values;
@@ -303,6 +391,8 @@ export function extractStatement(markdown: string, options: { fiscalYear?: numbe
   const current: Period = {};
   const prior: Period = {};
   for (const [line, a, b] of pending) {
+    // A figure too large to hold exactly is a misread, and is left out rather than rounded.
+    if (!Number.isSafeInteger(a * unit) || !Number.isSafeInteger(b * unit)) continue;
     current[line] = a * unit;
     prior[line] = b * unit;
   }
@@ -330,9 +420,11 @@ export function extractStatement(markdown: string, options: { fiscalYear?: numbe
       // Reclassification rows often leave a year blank, so read them by the closing row's columns.
       const columns = after[end]!.cells.flatMap((cell, index) => (cell.match(COMMA_AMOUNT) ? [index] : []));
       const moved = after.slice(Math.max(0, end - 6), end).filter((r) => r.values.length >= 1 && CASH_RECLASSIFIED.test(r.label));
-      if (moved.length && columns.length >= 2) {
-        current.cashOther = moved.reduce((sum, r) => sum + cellValue(r.cells[columns[0]!]), 0) * unit;
-        prior.cashOther = moved.reduce((sum, r) => sum + cellValue(r.cells[columns[1]!]), 0) * unit;
+      const a = moved.reduce((sum, r) => sum + cellValue(r.cells[columns[0]!]), 0) * unit;
+      const b = moved.reduce((sum, r) => sum + cellValue(r.cells[columns[1]!]), 0) * unit;
+      if (moved.length && columns.length >= 2 && Number.isSafeInteger(a) && Number.isSafeInteger(b)) {
+        current.cashOther = a;
+        prior.cashOther = b;
       }
     }
   }

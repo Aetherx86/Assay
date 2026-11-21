@@ -4,6 +4,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 import { analyze, VERSION } from './analyze.ts';
+import { checkDocument, exceeds } from './check.ts';
 import { reconcile } from './checks/reconcile.ts';
 import { coverage, toHtml, toHwpx, toMarkdown } from './report.ts';
 import { statementFromDocument } from './statements/file.ts';
@@ -13,7 +14,8 @@ const HELP = `Assay ${VERSION}: cross-checks what a Korean listed company report
 
 Usage
   assay analyze <stock code or name> --year <fiscal year> [options]
-  assay reconcile <file a> <file b> --year <fiscal year>
+  assay check <file> [--year <fiscal year>] [--json] [--fail-on watch|flag]
+  assay reconcile <file a> <file b> --year <fiscal year> [--json]
   assay validate <manifest.json> --round <n> [--set <comma separated sets, or all>] [--out dir]
 
 Analyze options
@@ -22,6 +24,14 @@ Analyze options
   --out <dir>         Output directory (default: out)
   --format <list>     Comma separated: md,json,html,hwpx (default: md,json,html)
   --no-external       Skip the patent, building, statute and statistics services
+  --json              Print the report as JSON on standard output instead of the summary
+
+Check options
+  check reads one local document (PDF, HWP, HWPX, DOCX, XLSX, HTML, TXT or MD) without any network
+  access and runs statement arithmetic, earnings quality, the leading-digit test and the audit letter.
+  --year <year>       Fiscal year, read from the document when left out
+  --json              Print the report as JSON instead of Markdown
+  --fail-on <status>  Exit with status 1 if any finding is watch or worse (watch) or a flag (flag)
 
 Environment
   DART_API_KEY        OpenDART key. Adds XBRL figures, insider data and search by company name
@@ -49,6 +59,7 @@ async function main(): Promise<number> {
       year: { type: 'string' }, doc: { type: 'string' }, site: { type: 'string', multiple: true },
       out: { type: 'string' }, format: { type: 'string' }, 'no-external': { type: 'boolean' },
       round: { type: 'string' }, set: { type: 'string' }, help: { type: 'boolean', short: 'h' }, version: { type: 'boolean', short: 'v' },
+      json: { type: 'boolean' }, 'fail-on': { type: 'string' },
     },
   });
   if (values.version) {
@@ -61,6 +72,7 @@ async function main(): Promise<number> {
     return values.help ? 0 : 2;
   }
   const year = values.year ? Number(values.year) : undefined;
+  if (year !== undefined && (!Number.isInteger(year) || year < 1990 || year > 2100)) throw new Error(`--year must be a four digit year, not "${values.year}".`);
 
   if (command === 'analyze') {
     if (!rest[0] || !year) throw new Error('analyze needs a company and --year.');
@@ -76,6 +88,10 @@ async function main(): Promise<number> {
     if (formats.includes('json')) await writeFile(join(out, `${base}.json`), JSON.stringify(report, null, 2));
     if (formats.includes('html')) await writeFile(join(out, `${base}.html`), toHtml(report));
     if (formats.includes('hwpx')) await writeFile(join(out, `${base}.hwpx`), await toHwpx(report));
+    if (values.json) {
+      console.log(JSON.stringify(report, null, 2));
+      return 0;
+    }
     const c = coverage(report);
     console.log(`${report.subject.name ?? report.subject.query} ${year}: ${c.layersRun}/${c.layers} layers ran. ${c.counts.flag} flag, ${c.counts.watch} watch, ${c.counts.pass} pass, ${c.counts.info} info, ${c.counts.unavailable} not run.`);
     if (c.missing.length) console.log(`Not run: ${c.missing.join(', ')}.`);
@@ -83,10 +99,23 @@ async function main(): Promise<number> {
     return 0;
   }
 
+  if (command === 'check') {
+    if (!rest[0]) throw new Error('check needs a file.');
+    const failOn = values['fail-on'];
+    if (failOn !== undefined && failOn !== 'watch' && failOn !== 'flag') throw new Error('--fail-on takes watch or flag.');
+    const report = await checkDocument(rest[0], { fiscalYear: year });
+    console.log(values.json ? JSON.stringify(report, null, 2) : toMarkdown(report));
+    return failOn && exceeds(report, failOn) ? 1 : 0;
+  }
+
   if (command === 'reconcile') {
     if (rest.length < 2 || !year) throw new Error('reconcile needs two files and --year.');
     const [a, b] = await Promise.all(rest.slice(0, 2).map((path) => statementFromDocument(path, { fiscalYear: year })));
     const result = reconcile(a!.statement, b!.statement);
+    if (values.json) {
+      console.log(JSON.stringify({ a: a!.statement.evidence, b: b!.statement.evidence, ...result }, null, 2));
+      return result.mismatches.length ? 1 : 0;
+    }
     console.log(`Core lines: ${result.coreMatched}/${result.coreCompared} agree.`);
     if (result.missingCore.length) console.log(`Could not compare: ${result.missingCore.join(', ')}`);
     for (const m of result.mismatches) console.log(`${m.line} (${m.period}): ${m.a} against ${m.b}`);

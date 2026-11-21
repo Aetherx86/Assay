@@ -1,14 +1,15 @@
+import { digitFinding } from './checks/digits.ts';
 import { auditChecks, disclosureChecks, ownershipChecks } from './checks/filings.ts';
 import { contextCheck, legalCheck, patentChecks, propertyCheck, regionFromAddress } from './checks/external.ts';
 import { earningsQuality, integrityChecks } from './checks/financial.ts';
 import { reconcile, reconciliationFinding, restatementFinding } from './checks/reconcile.ts';
 import { DartClient, type AuditorRow } from './sources/dart.ts';
 import { fetchDocument, findAnnualFiling, searchFilings } from './sources/kind.ts';
-import { extractAudit, extractRatings, extractStatement, latestRatings } from './statements/document.ts';
+import { amountTokens, extractAudit, extractRatings, extractStatement, latestRatings } from './statements/document.ts';
 import { statementFromDocument } from './statements/file.ts';
 import type { AuditReport, CreditRating, Evidence, Finding, Layer, Report, Statement } from './types.ts';
 
-export const VERSION = '0.1.0';
+export const VERSION = '0.2.0';
 
 export interface AnalyzeOptions {
   /** Stock code, or a registered company name when a DART key is set. */
@@ -103,9 +104,13 @@ export async function analyze(options: AnalyzeOptions): Promise<Report> {
     throw new Error('Give a six digit stock code, or set DART_API_KEY to search by company name.');
   }
 
+  let documentText = '';
+  let documentEvidence: Evidence | undefined;
   if (options.documentPath) {
     const parsed = await statementFromDocument(options.documentPath, { fiscalYear, company: name });
     sources.push(parsed.statement);
+    documentText = parsed.document.markdown;
+    documentEvidence = parsed.statement.evidence;
     if (!audit && parsed.audit.opinion !== 'not-found') {
       audit = parsed.audit;
       auditEvidence.push(parsed.statement.evidence);
@@ -122,6 +127,8 @@ export async function analyze(options: AnalyzeOptions): Promise<Report> {
     }
     if (sources.length < 2) findings.push(skipped('reconciliation.sources', 'reconciliation', 'Second source for the figures', 'Only one source of statements was available.'));
     if (earlier) findings.push(restatementFinding(statement, earlier));
+    // The annual report carries the statements and every note, which gives the most amounts to test.
+    findings.push(filingText ? digitFinding(amountTokens(filingText), filingEvidence) : digitFinding(amountTokens(documentText), documentEvidence));
   } else {
     findings.push(skipped('integrity.all', 'integrity', 'Statement arithmetic', 'No statements could be read.'));
     findings.push(skipped('quality.all', 'earnings-quality', 'Earnings quality', 'No statements could be read.'));

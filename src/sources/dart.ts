@@ -59,10 +59,15 @@ const TAGS: Record<Line, { sheets: string[]; tags: string[] }> = {
   depreciation: { sheets: ['CF'], tags: ['ifrs-full_AdjustmentsForDepreciationExpense'] },
 };
 
+/**
+ * Reads an OpenDART amount such as `-47,522,179,000,000`. `Number()` alone would also accept hex,
+ * exponents and `Infinity`, so only plain decimal figures that a double holds exactly are read.
+ */
 function amount(text: string | undefined): number | undefined {
-  if (text === undefined || text.trim() === '' || text.trim() === '-') return undefined;
-  const value = Number(text.replace(/,/g, ''));
-  return Number.isFinite(value) ? value : undefined;
+  const plain = text?.trim().replace(/,/g, '');
+  if (!plain || !/^[-+]?\d+(?:\.\d+)?$/.test(plain)) return undefined;
+  const value = Number(plain);
+  return Number.isSafeInteger(Math.trunc(value)) ? value : undefined;
 }
 
 export function inferUnit(rows: DartRow[]): number {
@@ -117,14 +122,23 @@ export function statementFromDartRows(rows: DartRow[], meta: { fiscalYear: numbe
   return { ...meta, unit: inferUnit(rows), current, prior };
 }
 
-/** Reads one stored or deflated file from a ZIP archive using its central directory. */
+/**
+ * Reads one stored or deflated file from a ZIP archive using its central directory. Every offset is
+ * checked against the buffer, so a truncated or crafted archive fails with a clear error instead of
+ * reading out of bounds or inflating without limit.
+ */
 export function readZipEntry(zip: Buffer, name: RegExp, maxBytes = 200 * 1024 * 1024): Buffer {
+  const corrupt = (what: string): Error => new Error(`Corrupt ZIP archive: ${what}.`);
+  // The end record sits in the last 22 bytes, plus a comment of at most 65,535 bytes.
+  const floor = Math.max(0, zip.length - 22 - 0xffff);
   let end = zip.length - 22;
-  while (end >= 0 && zip.readUInt32LE(end) !== 0x06054b50) end--;
-  if (end < 0) throw new Error('Not a ZIP archive.');
+  while (end >= floor && zip.readUInt32LE(end) !== 0x06054b50) end--;
+  if (end < floor) throw new Error('Not a ZIP archive.');
   const count = zip.readUInt16LE(end + 10);
   let offset = zip.readUInt32LE(end + 16);
   for (let i = 0; i < count; i++) {
+    if (offset + 46 > zip.length || zip.readUInt32LE(offset) !== 0x02014b50) throw corrupt('central directory entry out of place');
+    const flags = zip.readUInt16LE(offset + 8);
     const method = zip.readUInt16LE(offset + 10);
     const compressed = zip.readUInt32LE(offset + 20);
     const size = zip.readUInt32LE(offset + 24);
@@ -132,12 +146,22 @@ export function readZipEntry(zip: Buffer, name: RegExp, maxBytes = 200 * 1024 * 
     const extraLength = zip.readUInt16LE(offset + 30);
     const commentLength = zip.readUInt16LE(offset + 32);
     const local = zip.readUInt32LE(offset + 42);
+    if (offset + 46 + nameLength > zip.length) throw corrupt('file name runs past the end');
     const entry = zip.toString('utf8', offset + 46, offset + 46 + nameLength);
     if (name.test(entry)) {
-      if (size > maxBytes) throw new Error('ZIP entry is larger than expected.');
+      if (size > maxBytes || compressed > maxBytes) throw new Error('ZIP entry is larger than expected.');
+      if (flags & 1) throw new Error('ZIP entry is encrypted.');
+      if (method !== 0 && method !== 8) throw new Error(`ZIP entry uses unsupported compression method ${method}.`);
+      if (local + 30 > zip.length || zip.readUInt32LE(local) !== 0x04034b50) throw corrupt('local header out of place');
       const start = local + 30 + zip.readUInt16LE(local + 26) + zip.readUInt16LE(local + 28);
+      if (start + compressed > zip.length) throw corrupt('entry data runs past the end');
       const data = zip.subarray(start, start + compressed);
-      return method === 0 ? Buffer.from(data) : inflateRawSync(data, { maxOutputLength: maxBytes });
+      if (method === 0) return Buffer.from(data);
+      try {
+        return inflateRawSync(data, { maxOutputLength: maxBytes });
+      } catch (error) {
+        throw corrupt(`entry does not inflate (${(error as Error).message})`);
+      }
     }
     offset += 46 + nameLength + extraLength + commentLength;
   }

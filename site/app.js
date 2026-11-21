@@ -1,5 +1,6 @@
+import { digitFinding } from './lib/checks/digits.js';
 import { earningsQuality, integrityChecks } from './lib/checks/financial.js';
-import { extractStatement, htmlToLines } from './lib/statements/document.js';
+import { amountTokens, extractStatement, htmlToLines } from './lib/statements/document.js';
 
 const STATUS = { pass: 'Pass', info: 'Info', watch: 'Watch', flag: 'Flag', unavailable: 'Not run' };
 const KEY_LINES = [
@@ -104,7 +105,7 @@ function runChecks() {
     return;
   }
   const statement = { ...parsed, evidence: { source: 'Pasted text' } };
-  const findings = [...integrityChecks(statement), ...earningsQuality(statement)];
+  const findings = [...integrityChecks(statement), ...earningsQuality(statement), digitFinding(amountTokens(text), statement.evidence)];
   const found = Object.keys(statement.current).length;
   status.textContent = `Read ${found} lines. Compare them with your source before trusting the results.`;
   output.append(el('h2', 'Figures read (KRW)'), figures(statement), el('h2', 'Checks'), table(['Status', 'Check', 'Result'], findingRows(findings)));

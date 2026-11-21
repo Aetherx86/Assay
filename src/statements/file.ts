@@ -26,6 +26,8 @@ export async function parseDocument(path: string): Promise<ParsedDocument> {
   const bytes = await readFile(path);
   const sha256 = createHash('sha256').update(bytes).digest('hex');
   if (/\.html?$/i.test(path)) return { markdown: htmlToLines(bytes.toString('utf8')), path, sha256 };
+  // Plain text and Markdown, such as a statement pasted into a file, are read as they are.
+  if (/\.(txt|md|markdown|tsv)$/i.test(path)) return { markdown: bytes.toString('utf8'), path, sha256 };
   const { parse } = await loadParser();
   const log = console.log;
   console.log = (...args: unknown[]) => {
