@@ -1,10 +1,10 @@
 # Assay
 
-**[Try the browser demo](https://aetherx86.github.io/assay/) · [Validation protocol](validation/PROTOCOL.md)**
+**[Try the browser demo](https://omakasekim.github.io/assay/) · [Validation protocol](validation/PROTOCOL.md)**
 
 Assay cross-checks what a Korean listed company reports in its financial statements against independent public records: the auditor's report attached on KRX KIND, OpenDART XBRL and filing histories, US SEC 20-F XBRL for dual-listed firms, the national building register, the patent register, the statute database, and regional statistics.
 
-It is a command-line tool and TypeScript library (`@aetherx86/assay`) that outputs structured reports in Markdown, JSON, self-contained HTML, and HWPX (the document format used by Korean public institutions). A static browser version of the statement parser and financial checks runs entirely client-side under a strict Content-Security-Policy (`connect-src 'self'`) so pasted figures never leave the page.
+It is a command-line tool and TypeScript library (`@omakasekim/assay`) that outputs structured reports in Markdown, JSON, self-contained HTML, and HWPX (the document format used by Korean public institutions). A static browser version of the statement parser and financial checks runs entirely client-side under a strict Content-Security-Policy (`connect-src 'self'`) so pasted figures never leave the page.
 
 Across 39 company-years (31 distinct Korean listed companies, including 4 control companies whose auditors later issued a disclaimer of opinion), Assay achieves `99.8%` (`459/460`) core line agreement with attached audit reports, `99.6%` (`464/466`) agreement with OpenDART XBRL, `100%` (`4/4`) detection on disclaimer-of-opinion control years and prior-year early warnings, and exact 3-round repeatability.
 
@@ -82,7 +82,7 @@ External public-record checks (`intangible`, `physical`, `legal`, `context`) con
 - **Node.js:** `>= 22.18` (uses native TypeScript stripping and the built-in test runner)
 
 ```bash
-git clone https://github.com/Aetherx86/Assay.git
+git clone https://github.com/omakasekim/Assay.git
 cd Assay
 npm ci
 npm run build
@@ -150,8 +150,8 @@ node scripts/build-site.mjs out/site
 ## 5. Library API
 
 ```ts
-import { analyze } from '@aetherx86/assay/analyze';
-import { toMarkdown, toHtml, toJson, toHwpx } from '@aetherx86/assay/report';
+import { analyze } from '@omakasekim/assay/analyze';
+import { toMarkdown, toHtml, toJson, toHwpx } from '@omakasekim/assay/report';
 
 const report = await analyze({
   query: '005930',
